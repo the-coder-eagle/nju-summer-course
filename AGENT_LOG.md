@@ -45,6 +45,14 @@
 - **commit**：3 — `docs: add AGENT_LOG.md + SPEC_PROCESS.md`（本提交）
 - **待办**：实现代码受 §4.5 冷启动门阻塞（需用户用不同 agent 跑 SPEC+PLAN）。
 
+### #5 · 2026-07-08 · 阶段:冷启动验证（进行中）
+- **Superpowers 技能**：—（§4.5 冷启动，第二 agent = OpenCode）
+- **task**：—（验证 SPEC+PLAN 清晰度）
+- **关键事件**：第二 agent 实现 T1/T2 时受阻，提问"导入路径设置在 T22，冷启动 T1/T2 如何 `import harness` 跑绿"。暴露 PLAN 排序缺口（脚手架晚于首个 task）。
+- **修订**：PLAN 插入 **Task 0**（scaffolding / import-path：`pyproject.toml` pythonpath + `src/harness/__init__.py` + `tests/conftest.py` + sanity test）；T22 改为"扩展 pyproject + Makefile"；依赖注更新为 Task 0 前置。同步更新 `SPEC_PROCESS.md` §4.5。
+- **commit**：4 — `docs: fix PLAN ordering — add Task 0 scaffolding`
+- **教训**：脚手架/构建配置是所有 task 的隐性前置，必须显式成 task 放最前，否则冷启动与 subagent 在 T1 即卡。
+
 ---
 
 > 后续实现期每完成一个 PLAN task 即追加一条（含 task 编号、subagent 片段/commit hash、人工修改、教训）。

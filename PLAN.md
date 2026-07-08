@@ -77,7 +77,67 @@ sumsch/
 └── render.yaml  (deploy)
 ```
 
-**Dependency order / parallelism:** T1–T3 (types, config, llm-mock) are independent → parallelizable. T4–T8 (parser/guardrail/dispatcher/memory/context) depend only on T1–T3 → parallelizable among themselves. T9 (arena) independent. T10–T15 (feedback) depend on T1+T9; T10–T14 parallelizable, T15 after them. T16 (loop) after T4–T8+T15. T17 (deepseek) after T3. T18 (auth) independent. T19 (demo) after T16. T20–T21 (web) after T16. T22–T26 (infra) late, parallelizable.
+**Dependency order / parallelism:** **Task 0 (scaffolding/import-path) is the prerequisite for ALL tasks — do it first.** After Task 0, T1–T3 (types, config, llm-mock) are independent → parallelizable. T4–T8 (parser/guardrail/dispatcher/memory/context) depend only on T1–T3 → parallelizable among themselves. T9 (arena) independent. T10–T15 (feedback) depend on T1+T9; T10–T14 parallelizable, T15 after them. T16 (loop) after T4–T8+T15. T17 (deepseek) after T3. T18 (auth) independent. T19 (demo) after T16. T20–T21 (web) after T16. T22–T26 (infra) late, parallelizable.
+
+---
+
+### Task 0: Project scaffolding (import path)
+
+**Files:**
+- Create: `pyproject.toml`, `src/harness/__init__.py`, `tests/conftest.py`, `tests/test_sanity.py`
+
+**Interfaces:**
+- Produces: importable `harness` package + pytest `pythonpath`. **Prerequisite for T1–T26.** (T22 later expands `pyproject.toml` with deps/ruff/mypy + adds Makefile; `tests/conftest.py` already exists here.)
+
+- [ ] **Step 1: Write failing test**
+
+```python
+# tests/test_sanity.py
+def test_harness_importable():
+    import harness
+    assert harness is not None
+```
+
+- [ ] **Step 2: Run test (fail)**
+
+Run: `python -m pytest tests/test_sanity.py -v`
+Expected: FAIL — `ModuleNotFoundError: No module named 'harness'`
+
+- [ ] **Step 3: Implement**
+
+```python
+# src/harness/__init__.py
+```
+
+```toml
+# pyproject.toml
+[project]
+name = "coding-agent-harness"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+```
+
+```python
+# tests/conftest.py
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+```
+
+- [ ] **Step 4: Run test (pass)**
+
+Run: `python -m pytest tests/test_sanity.py -v`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add pyproject.toml src/harness/__init__.py tests/conftest.py tests/test_sanity.py
+git commit -m "build: project scaffolding + import path (Task 0)"
+```
 
 ---
 
@@ -1446,7 +1506,7 @@ async def stream_endpoint(ws: WebSocket):
 
 ### Task 22: Project packaging (`pyproject.toml`, `Makefile`, `conftest.py`)
 
-**Files:** Create `pyproject.toml`, `Makefile`, `tests/conftest.py` (sys.path for `src/` layout).
+**Files:** Modify `pyproject.toml` (expand from Task 0), Create `Makefile`. (`tests/conftest.py` already created in Task 0 — do not recreate.)
 **Interfaces:** `make test` → `python -m pytest -q`; `make run` → `uvicorn web.app:app`; `make lint` → `ruff check . && mypy src`.
 
 - [ ] **Step 1: Create pyproject.toml**
