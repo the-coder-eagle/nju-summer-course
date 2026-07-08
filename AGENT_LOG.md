@@ -53,6 +53,22 @@
 - **commit**：4 — `docs: fix PLAN ordering — add Task 0 scaffolding`
 - **教训**：脚手架/构建配置是所有 task 的隐性前置，必须显式成 task 放最前，否则冷启动与 subagent 在 T1 即卡。
 
+### #6 · 2026-07-08 · 阶段:冷启动验证（进行中）
+- **Superpowers 技能**：—（§4.5 冷启动，第二 agent = OpenCode）
+- **task**：—（验证 SPEC+PLAN）
+- **关键事件**：第二 agent 在 T1 TDD 途中又报两处 plan 缺口：①默认 `python` 3.10.11 低于 PLAN 的 ≥3.11 门槛；②pytest 默认未装，而依赖安装排在 T22。同时确认 T1 可按 PLAN 逐字实现并红→绿（T1 spec 清晰度 OK）。
+- **修订**：Python 门槛降为 ≥3.10（Global Constraints + 两处 `requires-python`）；Task 0 增 `pip install pytest` 步。完整 dev-deps-in-Task-0 重构延至真实实现期。SPEC_PROCESS §4.5 补发现 2、3。
+- **commit**：5 — `docs: lower Python floor to 3.10 + install pytest in Task 0 (cold-start findings 2&3)`
+- **教训**：版本门槛要对齐代码实际最低特性；共享依赖安装要前置到 setup task。
+
+### #7 · 2026-07-08 · 阶段:冷启动验证（完成）→ 转真实实现
+- **Superpowers 技能**：§4.5 冷启动完成；下一步 subagent-driven-development / executing-plans。
+- **task**：冷启动由第二 agent（OpenCode）实现 Task 0/1/2（commits `fb438e1`/`f518e94`/`83e1a16`，3 tests green，逐字照搬 PLAN）。
+- **关键事件**：冷启动共报 6 处缺口（详见 SPEC_PROCESS §4.5）。已修 6 处（Task0 导入、Python→3.10、pytest 安装、`__init__` 归属、Task1 未用 `field` import、`.gitattributes`）；跟进 1（venv 固定 `make test` 环境）。
+- **修订**：修 PLAN Task 1（去未用 import）；加 `.gitattributes`；SPEC_PROCESS §4.5 写冷启动完成报告；仓库加完整 `pyproject.toml`（含 build-system）作真实 Task 0 环境。
+- **commit**：docs(冷启动完成+修复) + code(pyproject + actions.py import fix)
+- **教训**：冷启动在 T1 即撞穿 3 处隐性前置缺口——"setup 必须显式成最前 task"。真实实现期改 worktree/MR（待 NJU remote）。
+
 ---
 
 > 后续实现期每完成一个 PLAN task 即追加一条（含 task 编号、subagent 片段/commit hash、人工修改、教训）。

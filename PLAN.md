@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Python ≥ 3.11. Pin `pytest>=8,<9`, `httpx>=0.27`, `keyring>=25`, `fastapi>=0.110`, `uvicorn>=0.29`, `ruff>=0.6`, `mypy>=1.11`.
+- Python ≥ 3.10 (dev machine default is 3.10.11; no 3.11-only features used; 3.11–3.13 also fine). Pin `pytest>=8,<9`, `httpx>=0.27`, `keyring>=25`, `fastapi>=0.110`, `uvicorn>=0.29`, `ruff>=0.6`, `mypy>=1.11`.
 - No high-level agent frameworks (LangChain AgentExecutor / AutoGen / CrewAI / LlamaIndex agent) — §A.4-A.
 - Mechanisms are code, not prompts — §A.4-B. Every core mechanism must pass a deterministic unit test under Mock/stub LLM with no network — §A.4-C.
 - Six dimensions all have a minimum runnable impl; feedback loop is the deep focus — §A.4-D.
@@ -114,7 +114,7 @@ Expected: FAIL — `ModuleNotFoundError: No module named 'harness'`
 [project]
 name = "coding-agent-harness"
 version = "0.1.0"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]
@@ -126,6 +126,10 @@ testpaths = ["tests"]
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 ```
+
+- [ ] **Step 3b: Install pytest**
+
+Run: `pip install pytest` (only pytest is needed for T0–T16; full dev deps `pip install -e ".[dev]"` come with T22's complete pyproject).
 
 - [ ] **Step 4: Run test (pass)**
 
@@ -174,7 +178,7 @@ def test_message_and_parseerror():
 
 ```python
 # src/harness/actions.py
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Literal, Optional
 
 @dataclass(frozen=True)
@@ -1515,7 +1519,7 @@ async def stream_endpoint(ws: WebSocket):
 [project]
 name = "coding-agent-harness"
 version = "0.1.0"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = ["httpx>=0.27", "keyring>=25", "fastapi>=0.110", "uvicorn>=0.29"]
 
 [project.optional-dependencies]
