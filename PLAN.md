@@ -701,7 +701,7 @@ def build_context(state: State, cfg: Config) -> list:
 
 ---
 
-### Task 9: Arena kata fixtures (`arena/`)
+### ✅ Task 9: Arena kata fixtures (`arena/`) `[bdf79f9]`
 
 **Files:** Create `arena/kata_assertion/{lib.py,test_lib.py,CONVENTIONS.md}` and analogous for `kata_import`, `kata_syntax`, `kata_type`, `kata_logic`, `kata_timeout`. No tests of their own — they are test fixtures consumed by T10/T15/T16/T19.
 **Interfaces:** Produces 6 kata dirs, each with a failing test + a buggy source to repair.
@@ -729,7 +729,7 @@ def test_add():
 
 ---
 
-### Task 10: Feedback runner (`feedback/runner.py`)
+### ✅ Task 10: Feedback runner (`feedback/runner.py`) `[5956511]`
 
 **Files:** Create `src/harness/feedback/runner.py`, `src/harness/feedback/__init__.py`; Test `tests/feedback/test_runner.py`
 **Interfaces:** Consumes `config.Config`. Produces `TestResult(exit_code, stdout, signals)`, `run_tests(target, cfg, timeout=30) -> TestResult`. Runs `python -m pytest <target>` with `cwd=sandbox_root`.
@@ -785,7 +785,7 @@ def run_tests(target: str, cfg: Config, timeout: int = 30) -> TestResult:
 
 ---
 
-### Task 11: Failure parser (`feedback/parse.py`)
+### ✅ Task 11: Failure parser (`feedback/parse.py`) `[08be729]`
 
 **Files:** Create `src/harness/feedback/parse.py`; Test `tests/feedback/test_parse.py`
 **Interfaces:** Consumes `runner.TestResult`. Produces `Failure(file, line, assertion, expected, actual, traceback, type=None, hint=None)`, `parse_failures(test_result) -> list[Failure]`.
@@ -854,7 +854,7 @@ def parse_failures(tr: TestResult) -> list:
 
 ---
 
-### Task 12: Failure classifier (`feedback/classifier.py`)
+### ✅ Task 12: Failure classifier (`feedback/classifier.py`) `[08be729]`
 
 **Files:** Create `src/harness/feedback/classifier.py`; Test `tests/feedback/test_classifier.py`
 **Interfaces:** Consumes `parse.Failure`. Produces `FailureType` (enum: assertion/import/syntax/type/logic/timeout), `classify(failure) -> tuple[str, str]` (type, hint).
@@ -926,7 +926,7 @@ def classify(f: Failure) -> tuple:
 
 ---
 
-### Task 13: Feedback composer (`feedback/composer.py`)
+### ✅ Task 13: Feedback composer (`feedback/composer.py`) `[23f722b]`
 
 **Files:** Create `src/harness/feedback/composer.py`; Test `tests/feedback/test_composer.py`
 **Interfaces:** Consumes `parse.Failure`, `classifier.classify`, `context.State`. Produces `Feedback(text, failures, retry_state)`, `compose(failures, state) -> Feedback`.
@@ -980,7 +980,7 @@ def compose(failures: list, state: State) -> Feedback:
 
 ---
 
-### Task 14: Self-correction strategy (`feedback/selfcorrect.py`)
+### ✅ Task 14: Self-correction strategy (`feedback/selfcorrect.py`) `[34f72f6]`
 
 **Files:** Create `src/harness/feedback/selfcorrect.py`; Test `tests/feedback/test_selfcorrect.py`
 **Interfaces:** Consumes `context.State`, `parse.Failure`. Produces `update_state(state, failures) -> str` (status: running/done/aborted), `STATUS_*` constants. Rules: no failures → done; budget hits 0 → aborted; same failure-type repeated ≥3 → escalate (status running but mark escalation); else running.
@@ -1043,7 +1043,7 @@ def update_state(state: State, failures: list) -> str:
 
 ---
 
-### Task 15: Feedback pipeline wiring (`feedback/pipeline.py`)
+### ✅ Task 15: Feedback pipeline wiring (`feedback/pipeline.py`) `[23f722b]`
 
 **Files:** Create `src/harness/feedback/pipeline.py`; Test `tests/feedback/test_pipeline.py`
 **Interfaces:** Consumes T10–T14. Produces `pipeline(test_result, state) -> Feedback` (run→parse→classify→compose + selfcorrect). Also sets `state.last_feedback`.
@@ -1093,7 +1093,7 @@ def pipeline(tr: TestResult, state: State):
 
 ---
 
-### Task 16: Main loop (`loop.py`) + §A.6 demos ②③
+### ✅ Task 16: Main loop (`loop.py`) + §A.6 demos ②③ `[34f72f6]`
 
 **Files:** Create `src/harness/loop.py`; Test `tests/test_loop.py`
 **Interfaces:** Consumes all. Produces `Outcome(status, turns, final_test_result)`, `run(task, llm, cfg) -> Outcome`. Each turn: build_context → llm.complete → parse → guardrail (HITL auto-deny in mock tests) → dispatch → if RunTests, pipeline → append to history → stop_check.

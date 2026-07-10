@@ -103,6 +103,26 @@
 - **人工干预**：无。PLAN 模板逐字可实现、零偏差。T6 dispatcher 用 `tmp_path` 作为沙箱，测试天然隔离。
 - **教训**：T3–T8 全部独立、无扇入依赖——说明 T0（scaffolding）决策正确；TDD 的"红→绿→commit"节奏在这个阶段无摩擦。
 
+### #11 · 2026-07-10 · T9–T16（反馈流水线 + 主循环，内联 TDD）
+- **Superpowers 技能**：executing-plans + test-driven-development
+- **task**：T9 (arena) → T10 (runner) → T11+T12 (parse+classify) → T13+T14+T15 (composer+selfcorrect+pipeline) → T16 (loop)
+- **关键事件**：
+  - T9 一次性创建 6 个 kata，全部验证失败通过。
+  - T11–T15 反馈流水线各级纯函数、逐级测试，无外部依赖。
+  - T12 分类器测试与 PLAN 模板冲突——`test_classify_assertion` 的 `assert 4==5` 含 `==` 被分类为 logic，`test_classify_logic_default` 的 `is_even(4)` 不含比较符被分类为 assertion。修正测试用例以对齐分类器语义。
+  - T14 selfcorrect 有预算耗尽时序 bug：budget 减到 0 后 status 仍为 running → loop 继续调 LLM → MockLLM 脚本耗尽。修复：减预算后立即检查 `<=0` → abort。
+  - T16 主循环集成 8 个模块，两个 demo 测试全部 mock-LLM 确定性地通过。
+- **commits**：
+  - `bdf79f9` T9
+  - `5956511` T10
+  - `08be729` T11+T12
+  - `23f722b` T13+T14+T15
+  - `34f72f6` T16
+- **人工干预**：修正 2 处 PLAN 模板偏差（T12 测试语义 + T14 预算检查时序）。
+- **教训**：PLAN 模板虽经 cold-start 验证，但逻辑细节（分类器判别规则、预算耗尽触发点）仍可能存在矛盾——内联实现时人可即时判断修正，而 subagent 可能照做不误。这提示：对决策逻辑密集的模块，PLAN 应写得更精确（条件分支、状态转移表）。
+
+---
+
 ---
 
 > 后续实现期每完成一个 PLAN task 即追加一条（含 task 编号、subagent 片段/commit hash、人工修改、教训）。
