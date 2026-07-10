@@ -11,6 +11,10 @@ def update_state(state: State, failures: list) -> str:
         state.status = "aborted"
         return "aborted"
     state.retry_budget -= 1
+    # if budget exhausted with failures remaining → abort
+    if state.retry_budget <= 0:
+        state.status = "aborted"
+        return "aborted"
     # track repeated failure types
     ftypes = [classify(f)[0] for f in failures]
     state._repeat_counts = getattr(state, "_repeat_counts", {})
