@@ -5,6 +5,7 @@ from harness.config import Config
 
 @dataclass
 class TestResult:
+    __test__ = False  # prevent pytest from collecting this as a test class
     exit_code: int
     stdout: str
     signals: dict = field(default_factory=dict)
