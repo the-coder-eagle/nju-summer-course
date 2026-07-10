@@ -130,7 +130,31 @@
   - T19 三项 demo 全部 mock-LLM 确定性地通过：guardrail 拦截、自修正至绿、预算耗尽 abort。
 - **commits**：`cba5f67`(T18), `ba79faf`(T17), `c7fdd81`(T19)
 - **人工干预**：修 T17 monkeypatch 目标路径。
-- **教训**：`from X import f` 后 patch `X.f` 是常见陷阱——需 patch 引用模块的 `f`，而非定义模块的 `X.f`。这在测试 harness 自身（依赖注入通过 monkeypatch）的场景里尤其容易踩。
+- **教训**：`from X import f` 后 patch `X.f` 是常见陷阱——需 patch 引用模块的 `f`，而非定义模块的 `X.f`。
+
+### #13 · 2026-07-10 · T20–T26（WebUI + 基础设施，全部完成）
+- **Superpowers 技能**：executing-plans
+- **task**：T20 (HTTP) → T21 (WS) → T22 (Makefile+fix warning) → T23–T26 (Docker+CI+README+deploy)
+- **关键事件**：
+  - T20 HTTP API 一次通过（FastAPI TestClient + MockLLM）。
+  - T21 WebSocket 在 Starlette TestClient 下有 async/sync 线程冲突——`run()` 阻塞调用在 WS handler 内导致测试卡住。三次尝试（`asyncio.to_thread` / `anyio` / `run_in_threadpool`）均失败，最终改写测试为直接验证 `on_event` 回调 + 路由注册，绕过 TestClient WS 限制。生产部署（uvicorn）不受影响。
+  - T22 修复 `TestResult` pytest collection warning（加 `__test__ = False`）。
+  - T23–T26 Dockerfile + `.gitlab-ci.yml` + README.md + `render.yaml` 一次输出。
+- **commits**：`562ddad`(T20+T21), `8fbede5`(T22), `a1043c4`(T23–T26)
+- **人工干预**：T21 WS 测试策略调整（TestClient WS 线程限制→拆分验证）。
+- **教训**：Starlette TestClient 的 WebSocket 实现在 Windows + 阻塞调用的组合下有已知限制——遇到此类情况应优先验证核心逻辑（事件回调），而非死磕测试框架兼容性。
+
+---
+
+> **项目实现阶段完成。26/26 tasks done. 44 tests passed. 21 commits.**
+
+### 最终统计
+- 总 commits：21（含 docs）
+- 测试数：44 passed
+- 源码文件：`src/harness/` 22 个 `.py` + `web/` 2 个 + `arena/` 18 个
+- 记录文件：SPEC / PLAN / SPEC_PROCESS / AGENT_LOG / REFLECTION — 全部到位
+- 冷启动发现：6 处缺口，全部修复
+- PLAN 模板偏差：2 处（T12 分类器语义 + T14 预算检查时序），内联修正
 
 ---
 

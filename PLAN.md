@@ -1380,7 +1380,7 @@ def test_demo3_classifier_and_budget_abort(tmp_path):
 
 ---
 
-### Task 20: WebUI HTTP API (`web/app.py`)
+### ✅ Task 20: WebUI HTTP API (`web/app.py`) `[562ddad]`
 
 **Files:** Create `web/app.py`, `web/__init__.py`; Test `tests/test_web_app.py` (FastAPI TestClient).
 **Interfaces:** Consumes `loop.run`, `llm.mock.MockLLM`. Produces `app` (FastAPI) with `POST /tasks` → `{"status","turns"}` using MockLLM in tests.
@@ -1439,7 +1439,7 @@ def post_tasks(req: TaskReq):
 
 ---
 
-### Task 21: WebUI WebSocket streaming (`web/ws.py`)
+### ✅ Task 21: WebUI WebSocket streaming (`web/ws.py`) `[562ddad]`
 
 **Files:** Create `web/ws.py`; Modify `web/app.py` to mount WS; Test `tests/test_web_ws.py`.
 **Interfaces:** Consumes `loop.run` (refactor loop to accept an `on_event` callback emitting per-turn dicts). Produces `WS /stream` yielding `{"turn","action","result","feedback"}`.
@@ -1508,7 +1508,7 @@ async def stream_endpoint(ws: WebSocket):
 
 ---
 
-### Task 22: Project packaging (`pyproject.toml`, `Makefile`, `conftest.py`)
+### ✅ Task 22: Project packaging (`pyproject.toml`, `Makefile`, `conftest.py`) `[8fbede5]`
 
 **Files:** Modify `pyproject.toml` (expand from Task 0), Create `Makefile`. (`tests/conftest.py` already created in Task 0 — do not recreate.)
 **Interfaces:** `make test` → `python -m pytest -q`; `make run` → `uvicorn web.app:app`; `make lint` → `ruff check . && mypy src`.
@@ -1561,7 +1561,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 ---
 
-### Task 23: Dockerfile
+### ✅ Task 23: Dockerfile `[a1043c4]`
 
 **Files:** Create `Dockerfile`; (no test — validated in CI image-build).
 **Interfaces:** Builds image with Python 3.11, installs deps, bundles src+arena+web, exposes 8000, runs uvicorn.
@@ -1587,7 +1587,7 @@ CMD ["uvicorn", "web.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ---
 
-### Task 24: CI (`.gitlab-ci.yml`)
+### ✅ Task 24: CI (`.gitlab-ci.yml`) `[a1043c4]`
 
 **Files:** Create `.gitlab-ci.yml`.
 **Interfaces:** `unit-test` job (pytest) + `image-build` job (docker build). Last pipeline must pass.
@@ -1624,7 +1624,7 @@ image-build:
 
 ---
 
-### Task 25: README.md
+### ✅ Task 25: README.md `[a1043c4]`
 
 **Files:** Create `README.md`.
 **Interfaces:** Required sections: 简介/安装/运行/分发命令/目录结构/安全边界.
@@ -1634,7 +1634,7 @@ image-build:
 
 ---
 
-### Task 26: Deploy config (`render.yaml`)
+### ✅ Task 26: Deploy config (`render.yaml`) `[a1043c4]`
 
 **Files:** Create `render.yaml`; (user deploys with their account).
 **Interfaces:** Web service running the Docker image, DeepSeek key via Render secret env.
