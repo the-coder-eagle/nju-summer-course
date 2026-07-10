@@ -1,6 +1,11 @@
 from dataclasses import dataclass, field
 
-DEFAULT_DENYLIST = ["rm -rf", "sudo", "drop ", "curl|sh", "wget|sh", ":(){:|:&};:"]
+DEFAULT_DENYLIST = [
+    "rm -rf", "sudo", "drop ",
+    "| sh", "| bash",     # pipe-to-shell (catches curl/wget/etc)
+    ":(){",                # fork bomb signature
+    "chmod 777",
+]
 
 @dataclass
 class Config:
