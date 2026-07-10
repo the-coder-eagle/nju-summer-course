@@ -1,21 +1,29 @@
+import re
 from harness.actions import EditFile, ReadFile, RunShell, RunTests, Finish, ParseError
 
 
 def parse(raw: str):
+    """Parse the first valid action from the LLM response."""
     s = raw.strip()
-    if s == "FINISH":
-        return Finish()
-    if s.startswith("EDIT "):
-        rest = s[5:]
-        path, sep, body = rest.partition(" ")
-        if sep != " " or "->" not in body:
-            return ParseError(f"bad EDIT: {raw}")
-        old, new = body.split("->", 1)
+
+    # EDIT: match multiline EDIT with -> separator (possibly on its own line)
+    m = re.search(r'^EDIT\s+(\S+)\s+(.+?)\s*->\s*(.+)$', s, re.MULTILINE | re.DOTALL)
+    if m:
+        path = m.group(1)
+        old = m.group(2)
+        new = m.group(3)
         return EditFile(path, old, new)
-    if s.startswith("READ "):
-        return ReadFile(s[5:].strip())
-    if s.startswith("SHELL "):
-        return RunShell(s[6:])
-    if s.startswith("TEST "):
-        return RunTests(s[5:].strip())
-    return ParseError(f"unrecognized action: {raw}")
+
+    # Single-line actions
+    for line in s.split("\n"):
+        line = line.strip()
+        if line == "FINISH":
+            return Finish()
+        if line.startswith("READ "):
+            return ReadFile(line[5:].strip())
+        if line.startswith("SHELL "):
+            return RunShell(line[6:].strip())
+        if line.startswith("TEST "):
+            return RunTests(line[5:].strip())
+
+    return ParseError(f"unrecognized action: {s[:100]}")

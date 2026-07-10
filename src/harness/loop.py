@@ -23,14 +23,18 @@ def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None) -> Outc
         resp = llm.complete(messages=msgs)
         action = parse(resp.content)
         if isinstance(action, ParseError):
-            state.history.append(("tool", f"parse error: {action.msg}"))
+            hint = ("Parse error: your response must be one of:\n"
+                    "  EDIT <path> <old_code>-><new_code>\n"
+                    "  READ <path>\n  SHELL <command>\n  TEST <target>\n  FINISH\n"
+                    f"Got: {resp.content[:100]}")
+            state.history.append(("user", hint))
             continue
         dec = guardrail(action, cfg)
         if dec.kind == "Deny":
-            state.history.append(("tool", f"denied: {dec.reason}"))
+            state.history.append(("user", f"denied: {dec.reason}"))
             continue
         if dec.kind == "RequireApproval":
-            state.history.append(("tool", f"needs approval (auto-denied): {dec.reason}"))
+            state.history.append(("user", f"needs approval (auto-denied): {dec.reason}"))
             continue
         result = dispatch(action, cfg)
         if on_event:
@@ -39,11 +43,17 @@ def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None) -> Outc
         if isinstance(action, RunTests):
             fb = pipeline(result.test_result, state)
             final = result.test_result
-            state.history.append(("tool", fb.text))
+            state.history.append(("user", fb.text))
             if state.status in ("done", "aborted"):
                 return Outcome(state.status, turn + 1, final)
         elif isinstance(action, Finish):
             return Outcome("done", turn + 1, final)
         else:
-            state.history.append(("tool", result.out or result.err))
+            feedback = result.out or result.err
+            # After EDIT/READ/SHELL success, hint what to do next
+            from harness.actions import EditFile
+            if result.ok and isinstance(action, EditFile):
+                feedback += (f"\nFile edited. Now reply with exactly:\n"
+                             f"TEST {state.current_kata}")
+            state.history.append(("user", feedback))
     return Outcome("aborted", max_turns, final)

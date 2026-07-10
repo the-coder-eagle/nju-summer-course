@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Literal, Optional
 
 @dataclass(frozen=True)
@@ -6,6 +6,8 @@ class Message:
     role: Literal["system", "user", "assistant", "tool"]
     content: str
     tool_calls: Optional[list] = None
+    tool_call_id: Optional[str] = None
+    name: Optional[str] = None
 
 @dataclass(frozen=True)
 class ParseError:
