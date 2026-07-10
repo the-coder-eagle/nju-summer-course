@@ -4,15 +4,15 @@ from harness.actions import Message
 from harness.memory import load_conventions
 from harness.config import Config
 
-SYSTEM_PROMPT = """You are a bug-fixing agent. Your ONLY output each turn must be ONE of:
+SYSTEM_PROMPT = """You are a bug-fixing agent. Reply with ONE command per turn:
 
-EDIT <path> <old_code>-><new_code>
+EDIT <path> <old>-><new>
 READ <path>
 SHELL <command>
 TEST <target>
 FINISH
 
-No explanations. No markdown. No multiple actions. Just the command."""
+Use EXACT file paths from the kata listing. No markdown, no explanation."""
 
 
 @dataclass
@@ -61,9 +61,9 @@ def build_context(state: State, cfg: Config) -> list:
         task = (
             f"Kata: {state.current_kata}\n\n"
             f"{files}\n\n"
-            f"1. EDIT the buggy file to fix the failing test\n"
-            f"2. Run: {_test_target(state)}\n"
-            f"3. If tests pass, reply: FINISH"
+            f"Use EXACTLY these paths. EDIT the buggy file, then:\n"
+            f"  {_test_target(state)}\n"
+            f"When tests pass: FINISH"
         )
         msgs.append(Message("user", task))
     else:
