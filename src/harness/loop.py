@@ -21,7 +21,7 @@ def _test_cmd(state: State) -> str:
     return f"TEST {t}"
 
 
-def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None) -> Outcome:
+def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None, logger=None) -> Outcome:
     state = State(retry_budget=cfg.retry_budget, current_kata=task)
     final = None
     for turn in range(max_turns):
@@ -47,6 +47,8 @@ def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None) -> Outc
         if on_event:
             on_event({"turn": turn, "action": repr(action), "result": result.out or result.err,
                        "feedback": state.last_feedback})
+        if logger:
+            logger.log(turn, repr(action), result.out or result.err, state.last_feedback)
 
         if isinstance(action, RunTests):
             fb = pipeline(result.test_result, state)

@@ -46,9 +46,16 @@ def cmd_run(args):
     llm = DeepSeekClient(model="deepseek-chat")
     cfg = load_config({"sandbox_root": sandbox, "retry_budget": 5})
 
+    from harness.logging import EventLogger
+    logger = EventLogger(args.log) if args.log else None
+
     print(f"Repairing {kata}...")
     events = []
-    out = run(".", llm, cfg, on_event=lambda e: events.append(e))
+    out = run(".", llm, cfg, on_event=lambda e: events.append(e), logger=logger)
+
+    if logger:
+        logger.close()
+        print(f"Log saved to {args.log}")
 
     for i, e in enumerate(events):
         act = str(e['action']).split("(")[0].split(".")[-1]
@@ -60,6 +67,20 @@ def cmd_run(args):
             print("Tests passed!")
         else:
             print(out.final_test_result.stdout[-300:])
+
+
+def cmd_replay(args):
+    """回放事件日志"""
+    from harness.logging import replay_log
+    events = replay_log(args.logfile)
+    if not events:
+        print("No events found.")
+        return
+    for e in events:
+        print(f"T{e['turn']}: {e['action'][:80]}")
+        if e.get("result"):
+            print(f"    => {e['result'][:80]}")
+    print(f"--- {len(events)} events")
 
 
 def cmd_web(args):
@@ -79,6 +100,11 @@ def main():
     # run
     p_run = sub.add_parser("run", help="Repair a kata")
     p_run.add_argument("kata", help="Kata name (e.g. kata_assertion)")
+    p_run.add_argument("--log", help="Save events to JSONL file", default=None)
+
+    # replay
+    p_replay = sub.add_parser("replay", help="Replay an event log")
+    p_replay.add_argument("logfile", help="JSONL log file")
 
     # web
     p_web = sub.add_parser("web", help="Start WebUI")
@@ -89,6 +115,8 @@ def main():
         cmd_auth(args)
     elif args.command == "run":
         cmd_run(args)
+    elif args.command == "replay":
+        cmd_replay(args)
     elif args.command == "web":
         cmd_web(args)
     else:
