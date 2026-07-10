@@ -81,7 +81,7 @@ sumsch/
 
 ---
 
-### Task 0: Project scaffolding (import path)
+### ✅ Task 0: Project scaffolding (import path) `[fb438e1]`
 
 **Files:**
 - Create: `pyproject.toml`, `src/harness/__init__.py`, `tests/conftest.py`, `tests/test_sanity.py`
@@ -89,7 +89,7 @@ sumsch/
 **Interfaces:**
 - Produces: importable `harness` package + pytest `pythonpath`. **Prerequisite for T1–T26.** (T22 later expands `pyproject.toml` with deps/ruff/mypy + adds Makefile; `tests/conftest.py` already exists here.)
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```python
 # tests/test_sanity.py
@@ -145,7 +145,7 @@ git commit -m "build: project scaffolding + import path (Task 0)"
 
 ---
 
-### Task 1: Action & message types (`actions.py`)
+### ✅ Task 1: Action & message types (`actions.py`) `[f518e94]`
 
 **Files:**
 - Create: `src/harness/actions.py`
@@ -154,7 +154,7 @@ git commit -m "build: project scaffolding + import path (Task 0)"
 **Interfaces:**
 - Produces: `Message(role, content, tool_calls=None)`, `ParseError(msg)`, and actions `ReadFile(path)`, `EditFile(path, old, new)`, `RunShell(cmd)`, `RunTests(target)`, `Finish()` as frozen dataclasses; helper `is_action(obj)`.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```python
 # tests/test_actions.py
@@ -223,7 +223,7 @@ def is_action(obj) -> bool:
 
 ---
 
-### Task 2: Config loader (`config.py`)
+### ✅ Task 2: Config loader (`config.py`) `[83e1a16]`
 
 **Files:** Create `src/harness/config.py`; Test `tests/test_config.py`
 **Interfaces:** Produces `Config(sandbox_root, retry_budget, denylist, warnlist, model, base_url, signals)` and `load_config(data: dict) -> Config`.
@@ -278,7 +278,7 @@ def load_config(data: dict) -> Config:
 
 ---
 
-### Task 3: LLM abstraction + Mock (`llm/base.py`, `llm/mock.py`)
+### ✅ Task 3: LLM abstraction + Mock (`llm/base.py`, `llm/mock.py`) `[ce4045e]`
 
 **Files:** Create `src/harness/llm/base.py`, `src/harness/llm/mock.py`, `src/harness/llm/__init__.py`; Test `tests/test_llm_mock.py`
 **Interfaces:** Produces `LLMResponse(raw, content, tool_calls=None)`, `LLMInterface.complete(messages, tools=None) -> LLMResponse`, `MockLLM(script: list[str])`.
@@ -352,7 +352,7 @@ from .mock import MockLLM
 
 ---
 
-### Task 4: Action parser (`parser.py`)
+### ✅ Task 4: Action parser (`parser.py`) `[3640d50]`
 
 **Files:** Create `src/harness/parser.py`; Test `tests/test_parser.py`
 **Interfaces:** Consumes `actions.*`. Produces `parse(raw: str) -> Action | ParseError`. Wire format: `EDIT <path> <old>-><new>`, `READ <path>`, `SHELL <cmd>`, `TEST <target>`, `FINISH`.
@@ -407,7 +407,7 @@ def parse(raw: str):
 
 ---
 
-### Task 5: Guardrail + HITL (`guardrail.py`)
+### ✅ Task 5: Guardrail + HITL (`guardrail.py`) `[2ea3e14]`
 
 **Files:** Create `src/harness/guardrail.py`; Test `tests/test_guardrail.py`
 **Interfaces:** Consumes `actions.*`, `config.Config`. Produces `Decision` (Allow/Deny/RequireApproval + reason), `guardrail(action, cfg) -> Decision`, `is_within_sandbox(path, root) -> bool`, `HitlState` machine (`submit/decide`).
@@ -503,7 +503,7 @@ class HitlState:
 
 ---
 
-### Task 6: Dispatcher (`dispatcher.py`)
+### ✅ Task 6: Dispatcher (`dispatcher.py`) `[841c67b]`
 
 **Files:** Create `src/harness/dispatcher.py`; Test `tests/test_dispatcher.py`
 **Interfaces:** Consumes `actions.*`, `config.Config`. Produces `ActionResult(ok, out, err, changed_files, test_result=None)`, `dispatch(action, cfg) -> ActionResult`. `RunTests` delegates to `feedback.runner.run_tests` (imported lazily to avoid cycles); for this task stub it via a callable injected in tests.
@@ -600,7 +600,7 @@ def dispatch(action, cfg: Config, test_runner=None):
 
 ---
 
-### Task 7: Memory (`memory.py`)
+### ✅ Task 7: Memory (`memory.py`) `[4c707e8]`
 
 **Files:** Create `src/harness/memory.py`; Test `tests/test_memory.py`
 **Interfaces:** Produces `load_conventions(project_dir: str) -> str` (reads `CONVENTIONS.md` if present, else `""`).
@@ -639,7 +639,7 @@ def load_conventions(project_dir: str) -> str:
 
 ---
 
-### Task 8: Context builder (`context.py`)
+### ✅ Task 8: Context builder (`context.py`) `[4c707e8]`
 
 **Files:** Create `src/harness/context.py`; Test `tests/test_context.py`
 **Interfaces:** Consumes `actions.Message`, `memory.load_conventions`. Produces `State(history, retry_budget, status, current_kata)`, `build_context(state, cfg) -> list[Message]`.

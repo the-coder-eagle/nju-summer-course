@@ -69,6 +69,40 @@
 - **commit**：docs(冷启动完成+修复) + code(pyproject + actions.py import fix)
 - **教训**：冷启动在 T1 即撞穿 3 处隐性前置缺口——"setup 必须显式成最前 task"。真实实现期改 worktree/MR（待 NJU remote）。
 
+### #8 · 2026-07-08 · 阶段:冷启动收尾(补提交)
+- **Superpowers 技能**:—
+- **task**:—(补 #7 漏提的 code 部分,非 PLAN task)
+- **关键事件**:#7 日志记 commit 含"code(pyproject + actions.py import fix)",但 `af353ef` 实际只落了 docs;两处 code 改动一直挂在 working tree(modified / untracked)。核对 `git status` 时发现。
+- **补提交**:① `src/harness/actions.py`——去未用 `field` import(冷启动发现 5);② `pyproject.toml`——带 build-system 的完整版(#7 提到但未入库,`requires-python>=3.10`、pytest `pythonpath=src`)。另把两份作业要求 .md(《通用要求》《项目 A》)归档入库。
+- **commit**:fix(actions)+docs(archive+本条)
+- **教训**:commit 前核对 `git status` 与日志描述一致,避免"日志说提了、实际没提";working tree 不留跨 commit 脏状态。
+
+### #9 · 2026-07-10 · 阶段:记录文件补全
+- **Superpowers 技能**：—
+- **task**：—（记录文件整理，非 PLAN task）
+- **关键事件**：检视项目进度，发现：① `REFLECTION.md` 缺失（§5 第 8 项硬性要求）；② `PLAN.md` 已完成 T0/T1/T2 但未标记完成状态与 commit hash；③ `AGENT_LOG.md` 停在第 8 条，实现期条目空缺。
+- **修订**：
+  - 创建 `REFLECTION.md`（9 节大纲，对应 §反思报告 9 个问题，待学生逐节填写）
+  - 更新 `PLAN.md`：T0/T1/T2 标 ✅ + 附 commit hash（`fb438e1`/`f518e94`/`83e1a16`）
+  - 本条目补全 `AGENT_LOG.md` 空白期
+- **commit**：未提交（本条目）
+- **教训**：记录文件应与代码同步推进；冷启动期密集修改后未及时回写 PLAN/AGENT_LOG，导致 2 天空白。
+
+---
+
+### #10 · 2026-07-10 · T3–T8（主 agent 内联实现，严格 TDD）
+- **Superpowers 技能**：test-driven-development
+- **task**：T3 (llm/mock) → T4 (parser) → T5 (guardrail) → T6 (dispatcher) → T7 (memory) + T8 (context)
+- **关键事件**：T3–T8 全为独立模块，按 PLAN TDD 模板逐任务红→绿→commit，每步约 2–5 分钟。T7/T8 合并为一次 commit（均小模块、无相互依赖）。
+- **commits**：
+  - `ce4045e` T3 — feat(llm): injectable abstraction + MockLLM
+  - `3640d50` T4 — feat(parser): parse LLM wire format to actions
+  - `2ea3e14` T5 — feat(guardrail): sandbox fence, denylist, HITL state
+  - `841c67b` T6 — feat(dispatcher): execute read/edit/shell/tests in sandbox
+  - `4c707e8` T7+T8 — feat(memory+context): conventions loader + message builder
+- **人工干预**：无。PLAN 模板逐字可实现、零偏差。T6 dispatcher 用 `tmp_path` 作为沙箱，测试天然隔离。
+- **教训**：T3–T8 全部独立、无扇入依赖——说明 T0（scaffolding）决策正确；TDD 的"红→绿→commit"节奏在这个阶段无摩擦。
+
 ---
 
 > 后续实现期每完成一个 PLAN task 即追加一条（含 task 编号、subagent 片段/commit hash、人工修改、教训）。
