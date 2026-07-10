@@ -149,16 +149,33 @@
 > **项目实现阶段完成。26/26 tasks done. 44 tests passed. 21 commits.**
 
 ### 最终统计
-- 总 commits：21（含 docs）
+- 总 commits：27（含 docs + CI + debug）
 - 测试数：44 passed
-- 源码文件：`src/harness/` 22 个 `.py` + `web/` 2 个 + `arena/` 18 个
+- 源码文件：`src/harness/` 23 个 `.py` + `web/` 2 个 + `arena/` 18 个
 - 记录文件：SPEC / PLAN / SPEC_PROCESS / AGENT_LOG / REFLECTION — 全部到位
 - 冷启动发现：6 处缺口，全部修复
 - PLAN 模板偏差：2 处（T12 分类器语义 + T14 预算检查时序），内联修正
+- DeepSeek 真实修复通过率：4/5 katas（80%）
 
 ---
 
----
+### #14 · 2026-07-10 · 合规自查 + 补齐缺失
+- **Superpowers 技能**：—
+- **task**：—（合规检查，非 PLAN task）
+- **关键发现**：对照通用要求 §5 逐条核查，发现 4 类缺口。
+- **已修复**：
+  1. ✅ CI 执行记录：新增 `.github/workflows/test.yml`，push 触发 GitHub Actions `unit-test` job
+  2. ✅ 工作流偏离记录（本条目）：worktree/PR/review 未使用，在此记录原因
+  3. ✅ 项目文件归档：`.gitattributes`、作业要求 .md 均入库
+- **待用户操作**：
+  - 🔲 Render 部署：`render.yaml` 已配置，需用户在 [dashboard.render.com](https://dashboard.render.com) 连接 GitHub 仓库 → 设 `DEEPSEEK_API_KEY` secret → 部署获取公网 URL
+- **commit**：`<pending>`
+- **偏离记录（§3.6 要求）**：
+  - *git worktrees*：未使用。原因：(1) 项目为单人开发，无并行冲突；(2) 开发机 Windows，worktree 与某些 Python 工具兼容性差。改为 `main` 分支直接 TDD 内联。
+  - *subagent-driven*：冷启动验证用 OpenCode（符合 §4.5），实现期因 task 粒度小（2-5 分钟）改为内联 `executing-plans`，效率更高。
+  - *两阶段 review*：未执行。原因：所有代码由主 agent 生成并经人工 review（修正 4 处：T12 分类器语义、T14 预算时序、T17 monkeypatch 路径、T21 WS 测试策略）。相当于 review 融入了 TDD 循环。
+  - *finishing-a-development-branch*：未执行。原因：`main` 分支直接开发，无 feature branch 可 finish。
+- **教训**：单人小项目的 Superpowers 全流程存在"形式大于实质"的部分——worktree/review/finish 的价值在多人协作和 PR 审核中才真正体现。对这些偏离如实记录比硬套流程更有价值。
 
 ---
 
