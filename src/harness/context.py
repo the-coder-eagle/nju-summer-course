@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass, field
 from harness.actions import Message
-from harness.memory import load_conventions
+from harness.memory import load_conventions, compress_history
 from harness.config import Config
 
 SYSTEM_PROMPT = """You are a bug-fixing agent. Reply with ONE command per turn:
@@ -70,7 +70,8 @@ def build_context(state: State, cfg: Config) -> list:
         last = _test_target(state)
         msgs.append(Message("user", f"Continue. To run tests use: {last}"))
 
-    for role, content in state.history:
+    history = compress_history(state.history, max_messages=30)
+    for role, content in history:
         msgs.append(Message(role, content))
     if state.last_feedback:
         msgs.append(Message("user", state.last_feedback))
