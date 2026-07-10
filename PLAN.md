@@ -1188,7 +1188,7 @@ def run(task: str, llm, cfg: Config, max_turns: int = 20) -> Outcome:
 
 ---
 
-### Task 17: DeepSeek LLM client (`llm/deepseek.py`)
+### ✅ Task 17: DeepSeek LLM client (`llm/deepseek.py`) `[ba79faf]`
 
 **Files:** Create `src/harness/llm/deepseek.py`; Test `tests/test_llm_deepseek.py` (offline: mock httpx).
 **Interfaces:** Consumes `llm.base.LLMInterface`, `auth.store.get_key`. Produces `DeepSeekClient(model, base_url)`; `complete()` calls `/chat/completions` via httpx using key from store; never logs key.
@@ -1250,7 +1250,7 @@ class DeepSeekClient(LLMInterface):
 
 ---
 
-### Task 18: Credential storage + CLI (`auth/store.py`, `auth/cli.py`)
+### ✅ Task 18: Credential storage + CLI (`auth/store.py`, `auth/cli.py`) `[cba5f67]`
 
 **Files:** Create `src/harness/auth/store.py`, `src/harness/auth/cli.py`, `src/harness/auth/__init__.py`; Test `tests/auth/test_store.py`
 **Interfaces:** Produces `get_key() -> str|None`, `set_key(value)`, `clear_key()`, `has_key() -> bool` (via `keyring` — service `harness.deepseek`, account `default`); CLI `auth set/status/update/clear` with hidden input & no-echo status.
@@ -1335,7 +1335,7 @@ from . import store
 
 ---
 
-### Task 19: §A.6 mechanism demo (`tests/demo/test_mechanism_demo.py`)
+### ✅ Task 19: §A.6 mechanism demo (`tests/demo/test_mechanism_demo.py`) `[c7fdd81]`
 
 **Files:** Create `tests/demo/test_mechanism_demo.py`; (depends on T5, T16). Demonstrates ① guardrail intercept, ② feedback self-correction, ③ classifier+budget abort — all under MockLLM, deterministic.
 

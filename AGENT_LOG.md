@@ -119,7 +119,20 @@
   - `23f722b` T13+T14+T15
   - `34f72f6` T16
 - **人工干预**：修正 2 处 PLAN 模板偏差（T12 测试语义 + T14 预算检查时序）。
-- **教训**：PLAN 模板虽经 cold-start 验证，但逻辑细节（分类器判别规则、预算耗尽触发点）仍可能存在矛盾——内联实现时人可即时判断修正，而 subagent 可能照做不误。这提示：对决策逻辑密集的模块，PLAN 应写得更精确（条件分支、状态转移表）。
+- **教训**：PLAN 模板虽经 cold-start 验证，但逻辑细节（分类器判别规则、预算耗尽触发点）仍可能存在矛盾——内联实现时人可即时判断修正，而 subagent 可能照做不误。
+
+### #12 · 2026-07-10 · T17–T19（DeepSeek + Auth + Demo）
+- **Superpowers 技能**：executing-plans + test-driven-development
+- **task**：T18 (auth) → T17 (deepseek) → T19 (demo)
+- **关键事件**：
+  - T18 auth store 用 monkeypatch 替换 keyring 后端，确定性地验证 set/get/clear/no-echo。
+  - T17 deepseek 测试 monkeypatch 位置有坑——`from harness.auth.store import get_key` 在模块级别绑定，patch `harness.auth.store.get_key` 无效，需 patch `harness.llm.deepseek.get_key`（直接 import 的局部引用）。
+  - T19 三项 demo 全部 mock-LLM 确定性地通过：guardrail 拦截、自修正至绿、预算耗尽 abort。
+- **commits**：`cba5f67`(T18), `ba79faf`(T17), `c7fdd81`(T19)
+- **人工干预**：修 T17 monkeypatch 目标路径。
+- **教训**：`from X import f` 后 patch `X.f` 是常见陷阱——需 patch 引用模块的 `f`，而非定义模块的 `X.f`。这在测试 harness 自身（依赖注入通过 monkeypatch）的场景里尤其容易踩。
+
+---
 
 ---
 
