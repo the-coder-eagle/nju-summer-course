@@ -5,7 +5,7 @@ from harness.guardrail import guardrail
 from harness.dispatcher import dispatch
 from harness.feedback.pipeline import pipeline
 from harness.config import Config
-from harness.actions import ParseError, RunTests, Finish
+from harness.actions import ParseError, RunTests, Finish, EditFile, ReadFile, RunShell
 
 
 @dataclass
@@ -15,6 +15,12 @@ class Outcome:
     final_test_result: object = None
 
 
+def _test_cmd(state: State) -> str:
+    """The correct TEST command for the current kata."""
+    t = state.current_kata if state.current_kata != "." else "."
+    return f"TEST {t}"
+
+
 def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None) -> Outcome:
     state = State(retry_budget=cfg.retry_budget, current_kata=task)
     final = None
@@ -22,24 +28,26 @@ def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None) -> Outc
         msgs = build_context(state, cfg)
         resp = llm.complete(messages=msgs)
         action = parse(resp.content)
+
         if isinstance(action, ParseError):
-            hint = ("Parse error: your response must be one of:\n"
-                    "  EDIT <path> <old_code>-><new_code>\n"
-                    "  READ <path>\n  SHELL <command>\n  TEST <target>\n  FINISH\n"
-                    f"Got: {resp.content[:100]}")
-            state.history.append(("user", hint))
+            state.history.append(("user",
+                f"Invalid format. Reply with ONE of: EDIT <path> <old>-><new>, "
+                f"READ <path>, SHELL <cmd>, {_test_cmd(state)}, FINISH"))
             continue
+
         dec = guardrail(action, cfg)
         if dec.kind == "Deny":
-            state.history.append(("user", f"denied: {dec.reason}"))
+            state.history.append(("user", f"Denied: {dec.reason}. Use a safe alternative."))
             continue
         if dec.kind == "RequireApproval":
-            state.history.append(("user", f"needs approval (auto-denied): {dec.reason}"))
+            state.history.append(("user", f"Needs approval: {dec.reason}. Try a different approach."))
             continue
+
         result = dispatch(action, cfg)
         if on_event:
             on_event({"turn": turn, "action": repr(action), "result": result.out or result.err,
                        "feedback": state.last_feedback})
+
         if isinstance(action, RunTests):
             fb = pipeline(result.test_result, state)
             final = result.test_result
@@ -48,12 +56,21 @@ def run(task: str, llm, cfg: Config, max_turns: int = 20, on_event=None) -> Outc
                 return Outcome(state.status, turn + 1, final)
         elif isinstance(action, Finish):
             return Outcome("done", turn + 1, final)
+        elif isinstance(action, EditFile):
+            if result.ok:
+                state.history.append(("user",
+                    f"Edit OK. Now run {_test_cmd(state)} to verify, then FINISH."))
+            else:
+                state.history.append(("user",
+                    f"Edit FAILED: {result.err}. Check the file path and try again."))
+        elif isinstance(action, ReadFile):
+            if result.ok:
+                state.history.append(("user",
+                    f"Read OK:\n{result.out[:500]}\nNow fix the bug with EDIT, then run {_test_cmd(state)}."))
+            else:
+                state.history.append(("user",
+                    f"Read FAILED: {result.err}. Try correct path: {state.current_kata}/<file>."))
         else:
-            feedback = result.out or result.err
-            # After EDIT/READ/SHELL success, hint what to do next
-            from harness.actions import EditFile
-            if result.ok and isinstance(action, EditFile):
-                feedback += (f"\nFile edited. Now reply with exactly:\n"
-                             f"TEST {state.current_kata}")
-            state.history.append(("user", feedback))
+            state.history.append(("user", result.out or result.err))
+
     return Outcome("aborted", max_turns, final)

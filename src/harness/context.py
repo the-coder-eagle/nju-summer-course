@@ -4,19 +4,15 @@ from harness.actions import Message
 from harness.memory import load_conventions
 from harness.config import Config
 
-SYSTEM_PROMPT = (
-    "You are a coding agent that repairs failing Python tests. "
-    "You can READ files, EDIT files (replace 'old' with 'new'), run SHELL commands, "
-    "run TEST (pytest), or FINISH when tests pass.\n\n"
-    "Emit exactly ONE action per turn in the following format:\n"
-    "  EDIT <filepath> <old_code>-><new_code>\n"
-    "  READ <filepath>\n"
-    "  SHELL <command>\n"
-    "  TEST <target>\n"
-    "  FINISH\n\n"
-    "The sandbox contains a kata with a buggy lib.py and a failing test_lib.py. "
-    "Your job: make test_lib.py pass by editing lib.py."
-)
+SYSTEM_PROMPT = """You are a bug-fixing agent. Your ONLY output each turn must be ONE of:
+
+EDIT <path> <old_code>-><new_code>
+READ <path>
+SHELL <command>
+TEST <target>
+FINISH
+
+No explanations. No markdown. No multiple actions. Just the command."""
 
 
 @dataclass
@@ -30,35 +26,49 @@ class State:
 
 
 def _read_kata_files(sandbox_root: str, kata: str) -> str:
-    """Read lib.py and test_lib.py from the kata directory."""
+    """Read kata source and test files, return them with their paths."""
     lines = []
-    kata_dir = os.path.join(sandbox_root, kata)
+    # Determine the actual kata directory on disk
+    if kata == ".":
+        kata_dir = sandbox_root
+        prefix = ""
+    else:
+        kata_dir = os.path.join(sandbox_root, kata)
+        prefix = kata.replace("\\", "/") + "/"
+
     for fname in ["lib.py", "test_lib.py", "CONVENTIONS.md"]:
         fpath = os.path.join(kata_dir, fname)
         if os.path.isfile(fpath):
-            # Show relative path from sandbox root so agent knows the correct path
-            rel = os.path.join(kata, fname).replace("\\", "/")
-            lines.append(f"=== {rel} ===")
+            lines.append(f"=== {prefix}{fname} ===")
             with open(fpath, encoding="utf-8") as f:
                 lines.append(f.read())
     return "\n".join(lines)
 
 
+def _test_target(state: State) -> str:
+    """Return the correct TEST target for the current kata."""
+    if state.current_kata == ".":
+        return "TEST ."
+    return f"TEST {state.current_kata}"
+
+
 def build_context(state: State, cfg: Config) -> list:
     conv = load_conventions(cfg.sandbox_root)
-    msgs = [Message("system", SYSTEM_PROMPT + ("\n\nConventions:\n" + conv if conv else ""))]
+    msgs = [Message("system", SYSTEM_PROMPT + ("\nConventions: " + conv if conv else ""))]
 
-    # First turn: include actual kata file contents
     if not state.history:
         files = _read_kata_files(cfg.sandbox_root, state.current_kata)
-        task = (f"Repair failing tests in kata: {state.current_kata}\n\n"
-                f"Here are the files in the sandbox:\n\n{files}\n\n"
-                f"Fix the bug in {state.current_kata}/lib.py, then run:\n"
-                f"  TEST {state.current_kata}\n"
-                f"When tests pass, reply FINISH.")
+        task = (
+            f"Kata: {state.current_kata}\n\n"
+            f"{files}\n\n"
+            f"1. EDIT the buggy file to fix the failing test\n"
+            f"2. Run: {_test_target(state)}\n"
+            f"3. If tests pass, reply: FINISH"
+        )
         msgs.append(Message("user", task))
     else:
-        msgs.append(Message("user", f"Continue repairing kata: {state.current_kata}"))
+        last = _test_target(state)
+        msgs.append(Message("user", f"Continue. To run tests use: {last}"))
 
     for role, content in state.history:
         msgs.append(Message(role, content))
