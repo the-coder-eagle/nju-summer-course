@@ -18,3 +18,31 @@ def run_tests(target: str, cfg: Config, timeout: int = 30) -> TestResult:
     )
     return TestResult(exit_code=proc.returncode, stdout=proc.stdout + proc.stderr,
                       signals={"pytest": proc.returncode})
+
+
+def run_ruff(target: str, timeout: int = 15) -> TestResult:
+    """Run ruff linter and return result. Non-zero exit means issues found."""
+    try:
+        proc = subprocess.run(
+            ["ruff", "check", target, "--output-format=text"],
+            capture_output=True, text=True, timeout=timeout,
+        )
+        return TestResult(exit_code=proc.returncode, stdout=proc.stdout + proc.stderr,
+                          signals={"ruff": proc.returncode})
+    except FileNotFoundError:
+        return TestResult(exit_code=-1, stdout="ruff not installed",
+                          signals={"ruff": -1})
+
+
+def run_mypy(target: str, timeout: int = 15) -> TestResult:
+    """Run mypy type checker and return result. Non-zero exit means issues found."""
+    try:
+        proc = subprocess.run(
+            ["mypy", target, "--ignore-missing-imports"],
+            capture_output=True, text=True, timeout=timeout,
+        )
+        return TestResult(exit_code=proc.returncode, stdout=proc.stdout + proc.stderr,
+                          signals={"mypy": proc.returncode})
+    except FileNotFoundError:
+        return TestResult(exit_code=-1, stdout="mypy not installed",
+                          signals={"mypy": -1})
