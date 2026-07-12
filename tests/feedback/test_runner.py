@@ -1,4 +1,3 @@
-import os
 import shutil
 import pathlib
 from harness.feedback.runner import run_tests

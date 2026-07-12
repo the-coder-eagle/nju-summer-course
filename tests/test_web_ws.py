@@ -1,6 +1,5 @@
 import shutil
 import pathlib
-import json
 from web.app import app
 from harness.config import load_config
 from harness.llm.mock import MockLLM

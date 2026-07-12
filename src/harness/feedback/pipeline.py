@@ -7,7 +7,7 @@ from harness.context import State
 
 def pipeline(tr: TestResult, state: State):
     failures = parse_failures(tr)
-    status = update_state(state, failures)
+    update_state(state, failures)
     fb = compose(failures, state)
     state.last_feedback = fb.text
     return fb

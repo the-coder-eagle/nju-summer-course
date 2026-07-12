@@ -1,4 +1,4 @@
-from harness.guardrail import guardrail, is_within_sandbox, HitlState, Decision
+from harness.guardrail import guardrail, is_within_sandbox, HitlState
 from harness.actions import EditFile, RunShell, ReadFile, RunTests, Finish
 from harness.config import load_config
 

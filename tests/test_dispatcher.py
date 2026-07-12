@@ -1,7 +1,5 @@
-import os
-import tempfile
 from harness.dispatcher import dispatch
-from harness.actions import ReadFile, EditFile, RunShell, RunTests, Finish
+from harness.actions import ReadFile, EditFile, RunShell, RunTests
 from harness.config import load_config
 
 

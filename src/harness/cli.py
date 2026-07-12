@@ -1,5 +1,4 @@
 """Coding Agent Harness CLI — 命令行入口"""
-import sys
 import os
 import shutil
 import tempfile

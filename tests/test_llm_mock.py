@@ -1,5 +1,4 @@
 from harness.llm.mock import MockLLM
-from harness.llm.base import LLMResponse
 
 
 def test_mock_returns_scripted_then_finish():

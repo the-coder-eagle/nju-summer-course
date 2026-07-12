@@ -1,1 +1,1 @@
-from . import store
+from . import store as store

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from harness.feedback.parse import Failure
 from harness.feedback.classifier import classify
 from harness.context import State
 

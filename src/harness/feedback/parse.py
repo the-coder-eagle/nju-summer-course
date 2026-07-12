@@ -1,18 +1,20 @@
 import re
 from dataclasses import dataclass
+from typing import Optional
+
 from harness.feedback.runner import TestResult
 
 
 @dataclass
 class Failure:
     file: str
-    line: int = None
-    assertion: str = None
-    expected: str = None
-    actual: str = None
+    line: Optional[int] = None
+    assertion: Optional[str] = None
+    expected: Optional[str] = None
+    actual: Optional[str] = None
     traceback: str = ""
-    type: str = None
-    hint: str = None
+    type: Optional[str] = None
+    hint: Optional[str] = None
 
 
 _FAIL_RE = re.compile(r"FAILED\s+(\S+?)::(\S+?)\s+-\s+(.*)")

@@ -23,6 +23,7 @@ class State:
     current_kata: str = ""
     last_feedback: str = ""
     escalated: bool = False
+    _repeat_counts: dict = field(default_factory=dict)
 
 
 def _read_kata_files(sandbox_root: str, kata: str) -> str:

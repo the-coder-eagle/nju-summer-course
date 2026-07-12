@@ -1,4 +1,4 @@
-from harness.feedback.parse import parse_failures, Failure
+from harness.feedback.parse import parse_failures
 from harness.feedback.runner import TestResult
 
 SAMPLE = """FAILED kata_assertion/test_lib.py::test_add - assert (2-3) == 5

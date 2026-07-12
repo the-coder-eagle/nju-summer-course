@@ -5,7 +5,7 @@ from harness.guardrail import guardrail
 from harness.dispatcher import dispatch
 from harness.feedback.pipeline import pipeline
 from harness.config import Config
-from harness.actions import ParseError, RunTests, Finish, EditFile, ReadFile, RunShell
+from harness.actions import ParseError, RunTests, Finish, EditFile, ReadFile
 
 
 @dataclass
