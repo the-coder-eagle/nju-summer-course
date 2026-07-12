@@ -2,6 +2,7 @@ import json
 import shutil
 import tempfile
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
@@ -9,7 +10,6 @@ from harness.loop import run
 from harness.config import load_config
 from harness.llm.deepseek import DeepSeekClient
 
-app = FastAPI()
 _runtime = {}
 
 
@@ -22,8 +22,7 @@ def set_runtime(*, llm, cfg):
     _runtime["cfg"] = cfg
 
 
-@app.on_event("startup")
-def init_runtime():
+def _init_runtime():
     """Auto-configure runtime on server start."""
     sandbox = os.path.join(tempfile.gettempdir(), "harness-sandbox")
     os.makedirs(sandbox, exist_ok=True)
@@ -42,6 +41,15 @@ def init_runtime():
     except Exception:
         from harness.llm.mock import MockLLM
         _runtime["llm"] = MockLLM(script=["EDIT lib.py a - b->a + b", "TEST .", "FINISH"])
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _init_runtime()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/tasks")
